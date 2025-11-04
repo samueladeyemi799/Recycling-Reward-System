@@ -1,0 +1,27 @@
+[project]
+name = 'Recycling-Reward-System'
+description = ''
+authors = []
+telemetry = true
+cache_dir = '.\.cache'
+requirements = []
+[contracts.Recycling-Reward-System]
+path = 'contracts/Recycling-Reward-System.clar'
+clarity_version = 3
+epoch = 3.1
+[contracts.config-registry]
+path = 'contracts/config-registry.clar'
+clarity_version = 3
+epoch = 3.1
+[repl.analysis]
+passes = ['check_checker']
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
+
+[repl.remote_data]
+enabled = false
+api_url = 'https://api.hiro.so'
