@@ -248,10 +248,10 @@
 (define-map material-impact-factors
     { material-id: uint }
     {
-        co2-saved-per-unit: uint,     ;; grams of CO2 saved
+        co2-saved-per-unit: uint, ;; grams of CO2 saved
         waste-diverted-per-unit: uint, ;; grams of waste diverted
-        water-saved-per-unit: uint,    ;; ml of water saved
-        energy-saved-per-unit: uint,   ;; watts saved
+        water-saved-per-unit: uint, ;; ml of water saved
+        energy-saved-per-unit: uint, ;; watts saved
     }
 )
 
@@ -261,12 +261,12 @@
     {
         name: (string-ascii 64),
         description: (string-ascii 256),
-        category: uint,               ;; 1=CO2, 2=Waste, 3=Water, 4=Energy
+        category: uint, ;; 1=CO2, 2=Waste, 3=Water, 4=Energy
         target-amount: uint,
         current-amount: uint,
         achieved: bool,
         achieved-at: (optional uint),
-        reward-points: uint,          ;; Bonus points when milestone reached
+        reward-points: uint, ;; Bonus points when milestone reached
     }
 )
 
@@ -295,10 +295,10 @@
 )
 
 ;; Badge thresholds (level 1, 2, 3 requirements)
-(define-constant BADGE-ECO-WARRIOR u1)      ;; CO2 savings
-(define-constant BADGE-WASTE-REDUCER u2)    ;; Waste diverted
-(define-constant BADGE-WATER-GUARDIAN u3)   ;; Water saved
-(define-constant BADGE-ENERGY-SAVER u4)     ;; Energy conserved
+(define-constant BADGE-ECO-WARRIOR u1) ;; CO2 savings
+(define-constant BADGE-WASTE-REDUCER u2) ;; Waste diverted
+(define-constant BADGE-WATER-GUARDIAN u3) ;; Water saved
+(define-constant BADGE-ENERGY-SAVER u4) ;; Energy conserved
 
 ;; Read-only functions
 (define-read-only (get-community-impact)
@@ -322,7 +322,10 @@
     (map-get? user-impact-contributions { user-id: user-id })
 )
 
-(define-read-only (get-user-badge (user-id uint) (badge-type uint))
+(define-read-only (get-user-badge
+        (user-id uint)
+        (badge-type uint)
+    )
     (map-get? user-badges {
         user-id: user-id,
         badge-type: badge-type,
@@ -382,7 +385,8 @@
         (quantity uint)
     )
     (let (
-            (impact-factors (unwrap! (map-get? material-impact-factors { material-id: material-id })
+            (impact-factors (unwrap!
+                (map-get? material-impact-factors { material-id: material-id })
                 (ok false) ;; No impact factors set, skip update
             ))
             (co2-impact (* quantity (get co2-saved-per-unit impact-factors)))
@@ -395,14 +399,20 @@
                 total-water-saved: u0,
                 total-energy-saved: u0,
                 milestones-contributed: u0,
-            } (map-get? user-impact-contributions { user-id: user-id })))
+            }
+                (map-get? user-impact-contributions { user-id: user-id })
+            ))
         )
         ;; Update global impact totals
         (var-set total-co2-saved (+ (var-get total-co2-saved) co2-impact))
-        (var-set total-waste-diverted (+ (var-get total-waste-diverted) waste-impact))
+        (var-set total-waste-diverted
+            (+ (var-get total-waste-diverted) waste-impact)
+        )
         (var-set total-water-saved (+ (var-get total-water-saved) water-impact))
-        (var-set total-energy-saved (+ (var-get total-energy-saved) energy-impact))
-        
+        (var-set total-energy-saved
+            (+ (var-get total-energy-saved) energy-impact)
+        )
+
         ;; Update user impact contributions
         (map-set user-impact-contributions { user-id: user-id } {
             total-co2-saved: (+ (get total-co2-saved existing-contribution) co2-impact),
@@ -411,10 +421,10 @@
             total-energy-saved: (+ (get total-energy-saved existing-contribution) energy-impact),
             milestones-contributed: (get milestones-contributed existing-contribution),
         })
-        
+
         ;; Check and award user badges
         (unwrap-panic (check-and-award-badges user-id))
-        
+
         (ok true)
     )
 )
@@ -422,7 +432,8 @@
 ;; Private function to check milestone progress and award completion
 (define-private (check-milestone-completion (milestone-id uint))
     (let (
-            (milestone (unwrap! (map-get? community-milestones { milestone-id: milestone-id })
+            (milestone (unwrap!
+                (map-get? community-milestones { milestone-id: milestone-id })
                 (ok false)
             ))
             (category (get category milestone))
@@ -471,10 +482,18 @@
             (energy-saved (get total-energy-saved user-contribution))
         )
         ;; Award badges based on thresholds
-        (unwrap-panic (award-badge-if-eligible user-id BADGE-ECO-WARRIOR co2-saved u1000 u5000 u20000))
-        (unwrap-panic (award-badge-if-eligible user-id BADGE-WASTE-REDUCER waste-diverted u500 u2500 u10000))
-        (unwrap-panic (award-badge-if-eligible user-id BADGE-WATER-GUARDIAN water-saved u2000 u10000 u50000))
-        (unwrap-panic (award-badge-if-eligible user-id BADGE-ENERGY-SAVER energy-saved u100 u500 u2000))
+        (unwrap-panic (award-badge-if-eligible user-id BADGE-ECO-WARRIOR co2-saved u1000 u5000
+            u20000
+        ))
+        (unwrap-panic (award-badge-if-eligible user-id BADGE-WASTE-REDUCER waste-diverted u500
+            u2500 u10000
+        ))
+        (unwrap-panic (award-badge-if-eligible user-id BADGE-WATER-GUARDIAN water-saved u2000
+            u10000 u50000
+        ))
+        (unwrap-panic (award-badge-if-eligible user-id BADGE-ENERGY-SAVER energy-saved u100
+            u500 u2000
+        ))
         (ok true)
     )
 )
@@ -493,14 +512,21 @@
                 user-id: user-id,
                 badge-type: badge-type,
             }))
-            (new-level (if (>= amount level3-threshold) u3
-                (if (>= amount level2-threshold) u2
-                    (if (>= amount level1-threshold) u1 u0)
+            (new-level (if (>= amount level3-threshold)
+                u3
+                (if (>= amount level2-threshold)
+                    u2
+                    (if (>= amount level1-threshold)
+                        u1
+                        u0
+                    )
                 )
             ))
         )
-        (if (and (> new-level u0)
-                (or (is-none existing-badge)
+        (if (and
+                (> new-level u0)
+                (or
+                    (is-none existing-badge)
                     (< (get level (unwrap-panic existing-badge)) new-level)
                 )
             )
@@ -710,12 +736,14 @@
 
 (define-public (update-leaderboard
         (week uint)
-        (user-rankings (list 10
+        (user-rankings (list
+            10
             {
-            user-id: uint,
-            points: uint,
-            recycling-count: uint,
-        }))
+                user-id: uint,
+                points: uint,
+                recycling-count: uint,
+            }
+        ))
     )
     (begin
         (asserts! (is-eq tx-sender contract-owner) err-owner-only)
